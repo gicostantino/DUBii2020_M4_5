@@ -3,7 +3,7 @@ Examen final DUBii 2020 des modules 4 et 5
 
 # Enoncé
 
-Nous allons vous faire faire un analyse simple, de données de reséquençage d'un génome bactérien. Les données sont issues de cet article : "Complete Genome Sequences of 13 Bacillus subtilis Soil Isolates for Studying Secondary Metabolite Diversity" [(doi:10.1128/MRA.01406-19)](doi:10.1128/MRA.01406-19)  
+Nous allons vous faire faire un analyse simple, de données de reséquençage d'un génome bactérien. Les données sont issues de cet article : "Complete Genome Sequences of 13 Bacillus subtilis Soil Isolates for Studying Secondary Metabolite Diversity" [doi:10.1128/MRA.01406-19](https://doi.org/10.1128/MRA.01406-19)  
 
 Nous alons vous demander de faire une première analyse de ces données, et de nous la rendre sous la forme d'un rapport qui trace l'ensemble des étapes suivies. Ce rapport devra être mis à nôtre disposition dans un dépôt public GitHub. Les analyses devront pouvoir être rejouées sur le cluster de l'IFB.  
 
