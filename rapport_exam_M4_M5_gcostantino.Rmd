@@ -1,0 +1,203 @@
+---
+title: "Mini-Projet M4-M5"
+author: "gilles Costantino"
+Date: "19/08/2020"
+output: 
+    html_notebook:
+      number_sections: yes
+      toc: true
+---
+
+Les fichiers bash nécessaires à répondre à l'énoncé du Mini-Projet M4_M5 sont stockées dans mon espace du core.cluster dans le répertoire exam_M4_M5/.
+
+
+# espace de travail et téléchargement des données
+
+les scripts et sorties des scripts sont stockées dans mon home du core.cluster.france-bioinformatique.fr dans le répertoire **/shared/home/gcostantino/exam_M4_M5/DUBii2020_M4_M5**
+
+```{bash}
+cd /shared/home/gcostantino/exam_M4_M5
+```
+
+les fichiers fasta et gff de la séquence de référence **NC_000964** sont à récupérer à partir du site ftp de ncbi avec la commande linux wget.  
+
+les reads fastq de **SRR10390685** à mapper sur la référence sont téléchargés depuis la base de données SRA de ncbi avec la fonction fasterq-dump de sra-tools.  
+l'espace de travail et l'import des données est réalisé à l'aide du script import.sh suivant à lancer sur core.cluster.france-bioinformatique.fr avec la commande *sbatch Scripts/import.sh*:  
+
+
+```{bash bash import.sh, echo=TRUE}
+#!/bin/bash
+#SBATCH -o import_slurm.%j.out  #stdout
+#SBATCH -e import_slurm.%j.err  #stderr
+#SBATCH --cpus-per-task 8
+
+#organisation espace de travail
+
+mkdir GFF
+mkdir REF
+mkdir FASTQ
+mkdir QC
+mkdir CLEANING
+mkdir MAPPING
+
+#import des données
+cd GFF
+srun wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/009/045/GCF_000009045.1_ASM904v1/GCF_000009045.1_ASM904v1_genomic.gff.gz
+srun gunzip GCF_000009045.1_ASM904v1_genomic.gff.gz
+
+cd ../REF
+srun wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/009/045/GCF_000009045.1_ASM904v1/GCF_000009045.1_ASM904v1_genomic.fna.gz
+srun gunzip GCF_000009045.1_ASM904v1_genomic.fna.gz
+
+cd ../FASTQ
+module load sra-tools
+srun --cpus-per-task 8 fasterq-dump -S -p SRR10390685 --outdir . --threads 8
+srun --cpus-per-task 8 pigz -p8 SRR10390685_1.fastq
+srun --cpus-per-task 8 pigz -p8 SRR10390685_2.fastq
+```
+
+```{bash}
+#commande slurm:
+sbatch Scripts/import.sh
+```
+
+# Contôle qualité des données fastq téléchargées
+
+Les fichiers fastq du répertoire FASTQ/ sont visualisés avec la commande *fastqc* introduite dans le fichier bash **Scripts/qualite_fastq.sh** .  
+Les rapports html de fastQC sont dans le répertoire QC/  
+
+```{bashbash qualite_fastq.sh,echo=TRUE}
+#! /bin/bash
+#SBATCH --array=0-1
+#SBATCH -o qualite_fastq.%j.out
+#SBATCH -e qualite_fastq.%j.err
+
+module load fastqc
+
+output_dir="QC"
+FASTQ_FILES=(FASTQ/*.fastq.gz)
+
+srun fastqc --quiet ${FASTQ_FILES[$SLURM_ARRAY_TASK_ID]} -o ${output_dir}
+```
+
+```{bash}
+#commande slurm:
+sbatch Scripts/qualite_fastq.sh
+```
+
+le rapport de SRR10390685_1.fastq.gz indique qu'il contient 7066055 reads de longueur entre 35 et 151 nt avec un %GC de 43% avec une sur-représentation de polyN. celui de SRR10390685_2.fastq.gz indique autant de reads, mais de longueur entre 130 et 151 nt avec le même taux de %GC avec une sur-représentation de polyG et en fin de séquence une proportion de reads ayant l'adaptateur universel d'illumina.
+La partie "Per base sequence content" indique un drapeau rouge pour les 2 lots de reads, les dernières bases sont déséquilibrées en proportion. 
+
+il est préférable de nettoyer les fins des séquences et supprimer les séquences les plus courtes pour ne garder que les pairs de séquence les mieux  et de longueurs homogènes!!
+
+## Profondeur de séquençage
+
+7066055 reads x 150 nt x 2=2119816500 pb pour le Bacillus subtilis P5_B1.  
+le génome de référence fait 4215606 pb.
+la profondeur de séquençage est de 2119816500 / 4215606 = **503x**
+
+## Nettoyage des reads
+
+```{bash cleaning.sh, echo=TRUE}
+#! /bin/bash
+#SBATCH -o cleaning_slurm.%j.out
+#SBATCH -e cleaning_slurm.%j.err
+#SBATCH --cpus-per-task 8
+
+module load fastp
+
+srun --cpus-per-task 8 fastp --in1 FASTQ/SRR10390685_1.fastq.gz --in2 FASTQ/SRR10390685_2.fastq.gz -l 100 --out1 CLEANING/SRR10390685_1.cleaned.fastq.gz --out2 CLEANING/SRR10390685_2.cleaned.fastq.gz --unpaired1 CLEANING/SRR10390685_singletons.fastq.gz --unpaired2 CLEANING/SRR10390685_singletons.fastq.gz -w 1 -h fastp.html -t 8
+
+```
+
+```{bash}
+#commande slurm:
+sbatch Scripts/cleaning.sh
+```
+
+le rapport fastp.html indique que initialement il y avait 14.132110 Millions de reads et après le nettoyage avec fastp et les paramètres utilisés il reste 13.710282 millions de reads pairés, soit environ **97%** des reads initiaux.  
+les reads exclus (**3%**) sont ceux de moindre qualités (2.52%), avec trop de N (0.03%) ou de longueur trop courte (0.44%).
+
+# Mapping des reads sur la référence
+
+## Indexation du fasta de la référence NC_000964
+
+```{bash ref_indexation.sh}
+#!/bin/bash
+#SBATCH -o ref_indexation.%j.out  #stdout
+#SBATCH -e ref_indexation.%j.err  #stderr
+
+cd REF/
+module load samtools
+srun samtools faidx GCF_000009045.1_ASM904v1_genomic.fna
+
+```
+
+```{bash}
+#commande slurm:
+sbatch Scripts/ref_indexation.sh
+```
+
+utiliser faidx de samtools permet de vérifier la structure du fichier fasta de la référence.
+
+## Mapping
+
+le mappeur utilisé pour positionner sur la séquence de la référence les reads à analyser est **bwa**.  
+
+```{bash mapping_bwa.sh}
+#!/bin/bash
+#SBATCH -o mapping_bwa.%j.out  #stdout
+#SBATCH -e mapping_bwa.%j.err  #stderr
+#SBATCH --cpus-per-task 4
+
+#modules
+module load bwa
+module load samtools
+
+#indexation
+srun bwa index REF/GCF_000009045.1_ASM904v1_genomic.fna
+
+#bwa
+srun --cpus-per-task=4 bwa mem REF/GCF_000009045.1_ASM904v1_genomic.fna CLEANING/SRR10390685_1.cleaned.fastq.gz CLEANING/SRR10390685_2.cleaned.fastq.gz -t 3 | samtools view -hbS - > MAPPING/SRR10390685.bam
+
+```
+
+```{bash}
+#commande slurm:
+sbatch Scripts/mapping_bwa.sh
+```
+
+Le fichier de sortie du mapping *mapping_bwa.9976184.out* indique 12969706 reads mappés sur 13726125 reads totaux soit **94.49%** le taux de reads correctement mappés sur la référence.
+aucune séquence ne mappe plusieurs scaffold.
+
+# gène trmNF
+
+## intersection du fichier gff avec le fichier bam
+
+Le script bash permettant de filtrer le gff de la référence pour ne garder que les positions du gène trmNF et de les croiser avec le fichier bam des reads mappant la référence est :  
+**Scripts/trmNF_filter.sh**
+```{bash trmNF_filter.sh}
+#!/bin/bash
+#SBATCH -o trmNF_filter.%j.out  #stdout
+#SBATCH -e trmNF_filter.%j.err  #stderr
+
+module load bedtools
+module load samtools
+
+#filtre des genes trmNF
+srun grep trmNF GFF/GCF_000009045.1_ASM904v1_genomic.gff | awk '$3=="gene"' > GFF/trmNF.gff3
+
+#bedtools intersect
+srun samtools index MAPPING/SRR10390685_sorted.bam
+srun bedtools intersect -a MAPPING/SRR10390685_sorted.bam -b GFF/trmNF.gff3 -f 0.5 > MAPPING/SRR10390685_on_trmNF.bam
+srun samtools view -c MAPPING/SRR10390685_on_trmNF.bam
+
+```
+
+```{bash}
+#commande slurm:
+sbatch Scripts/trmNF_filter.sh
+```
+
+Le gène trmNF existe dans le génome de référence circulaire de bacilus subtilis sur un locus entre les positions 42917 et 43660.
+le fichier *trmNF_filter.9976618.out* indique que **2848 reads mappent sur au moins 50% du gène trmNF**. le contenu des ces reads est dans le fichier **MAPPING/SRR10390685_on_trmNF.bam**.
