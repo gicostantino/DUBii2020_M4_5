@@ -3,37 +3,20 @@
 # DUBii2020_M4_5
 Examen final DUBii 2020 des modules 4 et 5
 
-# EnoncÃ©
+## Enoncé
 
-Nous allons vous faire faire un analyse simple, de donnÃ©es de resÃ©quenÃ§age d'un gÃ©nome bactÃ©rien. Les donnÃ©es sont issues de cet article : "Complete Genome Sequences of 13 Bacillus subtilis Soil Isolates for Studying Secondary Metabolite Diversity" [doi:10.1128/MRA.01406-19](https://doi.org/10.1128/MRA.01406-19)  
+Le sujet du mini Projet des modules M4 et M5 est le suivant:  
+[enonce](https://github.com/gicostantino/DUBii2020_M4_5/enonce_M4_M5.md)
 
-Nous alons vous demander de faire une premiÃ¨re analyse de ces donnÃ©es, et de nous la rendre sous la forme d'un rapport qui trace l'ensemble des Ã©tapes suivies. Ce rapport devra Ãªtre mis Ã  nÃ´tre disposition dans un dÃ©pÃ´t public GitHub. Les analyses devront pouvoir Ãªtre rejouÃ©es sur le cluster de l'IFB.  
+## Rapport
 
-## DonnÃ©es d'entrÃ©es :
+Le répertoire **scripts/** contient tous les scripts bash nécessaires pour répondre aux questions de l'énoncé.    
+A partir d'un répertoire courant, le script **import.sh** va créer une arborescence de répertoires où seront stockées les données brutes et les données traités par les différents scripts.  
+Le script **qualite_fastq.sh** va parcourir les données de qualité des reads.  
+Le script **cleaning.sh** va nettoyer les reads sur la base de la qualité des reads.  
+Le script **ref_indexation.sh** permet d'indexer la référence en fasta et de voir la structure du fichier fasta.  
+le script **mapping_bwa.sh** va indexer la réference pour bwa et réaliser le mapping des reads sur la référence.  
+le script **trmNF_filter.sh** va filtrer le fichier gff de la référence pour isoler les positions du gène trmNF et ensuite faire l'intersection des reads mappés avec les positions du gène trmNF.
 
-* Identifiant du run : **SRR10390685**   
-* GÃ©nome de rÃ©fÃ©rence : **NC_000964**     
-  * [Gff](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/009/045/GCF_000009045.1_ASM904v1/GCF_000009045.1_ASM904v1_genomic.gff.gz)  
-  * [Fasta](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/009/045/GCF_000009045.1_ASM904v1/GCF_000009045.1_ASM904v1_genomic.fna.gz)    
-        
-## Consignes :
-
-### DÃ©tailler les diffÃ©rentes Ã©tapes dans un rapport HTML ou PDF (gÃ©nÃ©rÃ© via un Rmd ou autre).
-
-* TÃ©lÃ©chargement des donnÃ©es depuis les banques publiques  
-* ContrÃ´le qualitÃ© des donnÃ©es brutes (reads)  
-  * La qualitÃ© des bases vous paraÃ®t-elle satisfaisante ? Pourquoi ?  
-  * Quelle est la profondeur de sÃ©quenÃ§age (calculÃ©e par rapport Ã  la taille du gÃ©nome de rÃ©fÃ©rence) ?  
-* Nettoyage des reads  
-  * Quel pourcentage de reads sont filtrÃ©s et pourquoi ?  
-* Alignement des reads contre le gÃ©nome de refÃ©rence  
-  * Quel est le % de reads pairÃ©s alignÃ©s ?  
-* Extraire dans un fichier BAM les reads chevauchant Ã  au moins 50% le gÃ¨ne trmNF  
-
-### Informations devant figurer dans le rapport
-
-* PrÃ©sentation (par exemple Ã  l'aide de la commande tree) de l'organisation du repretoire du projet
-* Justification des paramÃ¨tres utilisÃ©s
-* Analyse succinte des rÃ©sultats obtenus aprÃ¨s chaque outil lancÃ© (figures, tableaux ou texte)
-
-
+le Rmd suivant détaille toutes les étapes.  
+[Rapport](https://github.com/gicostantino/DUBii2020_M4_5/rapport_exam_M4_M5_gcostantino.Rmd/)
