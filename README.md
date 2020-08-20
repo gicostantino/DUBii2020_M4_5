@@ -19,4 +19,4 @@ le script **mapping_bwa.sh** va indexer la réference pour bwa et réaliser le map
 le script **trmNF_filter.sh** va filtrer le fichier gff de la référence pour isoler les positions du gène trmNF et ensuite faire l'intersection des reads mappés avec les positions du gène trmNF.
 
 le Rmd suivant détaille toutes les étapes.  
-[Rapport](https://github.com/gicostantino/DUBii2020_M4_5/blob/master/rapport_exam_M4_M5_gcostantino.Rmd/)
+[Rapport](https://github.com/gicostantino/DUBii2020_M4_5/blob/master/rapport_exam_M4_M5_gcostantino.nb.html/)
