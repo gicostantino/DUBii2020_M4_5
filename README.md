@@ -6,7 +6,7 @@ Examen final DUBii 2020 des modules 4 et 5
 ## Enoncé
 
 Le sujet du mini Projet des modules M4 et M5 est le suivant:  
-[enonce](https://github.com/gicostantino/DUBii2020_M4_5/enonce_M4_M5.md)
+[enonce](https://github.com/gicostantino/DUBii2020_M4_5/blob/master/enonce_M4_M5.md)
 
 ## Rapport
 
@@ -19,4 +19,4 @@ le script **mapping_bwa.sh** va indexer la réference pour bwa et réaliser le map
 le script **trmNF_filter.sh** va filtrer le fichier gff de la référence pour isoler les positions du gène trmNF et ensuite faire l'intersection des reads mappés avec les positions du gène trmNF.
 
 le Rmd suivant détaille toutes les étapes.  
-[Rapport](https://github.com/gicostantino/DUBii2020_M4_5/rapport_exam_M4_M5_gcostantino.Rmd/)
+[Rapport](https://github.com/gicostantino/DUBii2020_M4_5/blob/master/rapport_exam_M4_M5_gcostantino.Rmd/)
