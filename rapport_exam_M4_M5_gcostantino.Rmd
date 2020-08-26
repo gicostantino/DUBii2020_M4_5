@@ -155,6 +155,7 @@ srun samtools sort MAPPING/SRR10390685.bam -o MAPPING/SRR10390685_sorted.bam
 Le fichier de sortie du mapping *mapping_bwa.10235287.out* indique 12969706 reads mappés sur 13726125 reads totaux soit **94.49%** le taux de reads correctement mappés sur la référence.
 aucune séquence ne mappe plusieurs scaffold.  
 ![](mapping_result.png)  
+
 #### Extraire dans un fichier BAM les reads chevauchant à au moins 50% le gène trmNF  
 
 Le script bash permettant de filtrer le gff de la référence pour ne garder que les positions du gène trmNF et de les croiser avec le fichier bam des reads mappant 50% de la référence est :  
