@@ -4,7 +4,7 @@ author: "gilles Costantino"
 output:
   html_notebook:
     number_sections: yes
-    toc: no
+    toc: yes
     toc_depth : 5
     variant: markdown_github
   Date: 26/08/2020
