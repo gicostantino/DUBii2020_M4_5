@@ -1,6 +1,6 @@
 #! /bin/bash
 #SBATCH --array=0-1
-#SBATCH -o qualit√e_fastq.√%j.out
+#SBATCH -o qualite_fastq.%j.out
 #SBATCH -e qualite_fastq.%j.err
 
 module load fastqc
